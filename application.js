@@ -16,7 +16,7 @@ function getNumber() {
 
 function invalidBet(bet) {
 	console.log("inside invalidBet");
-	return (isNaN(bet) || bet < MIN_BET || bet > MAX_BET || bet > money);
+	return (isNaN(bet) || bet < MIN_BET || bet > MAX_BET);
 }
 
 function invalidNum(num) {
@@ -24,6 +24,8 @@ function invalidNum(num) {
 }
 
 $(document).ready(function(){
+
+	$('#restart').hide();
 
 	// clear fields on focus
 	$('#input').find('input').focus(function(){
@@ -50,31 +52,50 @@ $(document).ready(function(){
 		}
 	});
 
+	// restart game
+	$('#restart').on('click', function(){
+		money = 100;
+		betAmt = 0;
+		betNum = 0;
+		$('#bankroll').text(money);
+		$('#bet').val('');
+		$('#number').val('');
+		$('#message').text('');
+		$('#currentBet').text('');
+		$('#currentNumber').text('');
+	});
+
 	//play game
 	$('#play').on('click', function() {
 		if (invalidBet(betAmt) || invalidNum(betNum)) {
+			$('#message').text("Please make sure you have entered the fields correctly before playing.");
+		} else if (money < MIN_BET){
+			$('#message').text("You do not have enough money to play, please restart the game.");
+		} else {
+			var randomNumber = Math.ceil(Math.random() * 10);
+			chosen = "I chose " + randomNumber;
+			switch (betNum){
+				case randomNumber:
+					money += betAmt;
+					message = "You win! Your winnings: $" + betAmt;
+					break;
+				case randomNumber + 1:
+				case randomNumber - 1:
+					message = "Close enough! You don't win anything but you get to keep your bet.";
+					break;
+				default:
+					money -= betAmt;
+					message = "You lose!";
+			}
+			$('#bankroll').text("$" + money);
+			$('#chosen').text(chosen);
+			if (money < MIN_BET) {
+				message += " Game Over!";
+				$('#restart').show();
+			}
+			$('#message').text(message);
+		}
 
-		}
-		var randomNumber = Math.ceil(Math.random() * 10);
-		chosen = "I chose " + randomNumber;
-		switch (betNum){
-			case randomNumber:
-				money += betAmt;
-				message = "You win! Your winnings: $" + betAmt;
-				break;
-			case randomNumber + 1:
-			case randomNumber - 1:
-				message = "Close enough! You don't win anything but you get to keep your bet.";
-				break;
-			default:
-				money -= betAmt;
-				message = "You lose!";
-		}
-		$('#bankroll').text("$" + money);
-		$('#chosen').text(chosen);
-		$('#message').text(message);
 	});
-
-	// window.alert("Game over!\nNot enough money to make bets\nCash remaining: $" + money);
 
 });
